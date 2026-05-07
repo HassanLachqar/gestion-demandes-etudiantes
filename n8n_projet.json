@@ -1,0 +1,1105 @@
+{
+  "name": "n8n_projet",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "seconds"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -144,
+        -272
+      ],
+      "id": "fa9a92ec-2878-4d89-bdb7-721df005814d",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1mRqAlbguowkoME4suIvSgOW1f87-9zre9CRZ9fXxDuk",
+          "mode": "list",
+          "cachedResultName": "Gestion des demandes étudiantes",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mRqAlbguowkoME4suIvSgOW1f87-9zre9CRZ9fXxDuk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1925727567,
+          "mode": "list",
+          "cachedResultName": "Réponses au formulaire 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mRqAlbguowkoME4suIvSgOW1f87-9zre9CRZ9fXxDuk/edit#gid=1925727567"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        80,
+        -272
+      ],
+      "id": "cf911eb9-0f1b-4141-b939-e1ecbe56d661",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "bAAFFtf2J45TQqlt",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "891e22d4-0701-4dab-b36e-5445e3fdd6c2",
+              "leftValue": "={{ $json['Statut  '] }}",
+              "rightValue": "Traité",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        272,
+        -272
+      ],
+      "id": "fd4d1dd2-5ca1-4a47-b694-03f2fc47cef5",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "622a4a2f-0fd5-49dc-948c-c288b32c7c1e",
+              "leftValue": "={{ $('Get row(s) in sheet').item.json['Réponse de l’administration '] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        496,
+        -288
+      ],
+      "id": "b69dd487-bfaa-4bff-bcaa-da1970432baf",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Nom de l’étudiant :\n{{ $('Get row(s) in sheet').item.json['Nom de l’étudiant '] }}\n\nDemande de l’étudiant :\n{{ $('Get row(s) in sheet').item.json['Contenu de la demande '] }}\n\nRéponse de l’administration :\n{{ $('Get row(s) in sheet').item.json['Réponse de l’administration '] }}",
+        "options": {
+          "systemMessage": "Tu es un assistant d’intelligence artificielle chargé de reformuler des réponses administratives\ndestinées à des étudiants.\n\nTon rôle est STRICTEMENT limité à :\n- reformuler la réponse fournie par l’administration,\n- la rendre claire et professionnelle,\n- sans modifier le sens,\n- sans ajouter d’informations nouvelles.\n\nIMPORTANT :\n- Ne pas ajouter \"Cordialement\".\n- Ne pas ajouter de signature.\n- Générer uniquement le CORPS du message.\n\nTu ne dois PAS :\n- inventer du contenu,\n- donner un avis personnel,\n- répondre sans réponse de l’administration.\n\nRéponds UNIQUEMENT en JSON :\n\n{\n  \"reponse_professionnelle\": \"Contenu professionnel prêt à être inséré dans un email\"\n}\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        672,
+        -112
+      ],
+      "id": "d22afa41-acbc-4f21-9c7e-b3a333ce89cb",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Get row(s) in sheet').item.json['Adresse e-mail '] }}",
+        "subject": "Traitement de votre demande",
+        "message": "<!DOCTYPE html>  <html lang=\"fr\"> <head> <meta charset=\"UTF-8\"> <title>Traitement de votre demande</title> </head> <body style=\"font-family: Arial, sans-serif; background-color:#f4f6f8; padding:20px;\">   <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\">     <tr>       <td align=\"center\">         <table width=\"600\" cellpadding=\"20\" cellspacing=\"0\" style=\"background-color:#ffffff; border:1px solid #dddddd;\">           <tr>             <td>               <p>Bonjour,</p>  ```           <p>             Nous vous informons que votre demande a été traitée par l’administration.           </p>            <p>             Aucune réponse détaillée n’est requise pour cette demande.             Pour toute information complémentaire, vous pouvez contacter le service administratif.           </p>            <p style=\"margin-top:30px;\">             Cordialement,<br>             <strong>Service Administration</strong><br>             ESMA           </p>         </td>       </tr>     </table>   </td> </tr> ```    </table> </body> </html>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        736,
+        -304
+      ],
+      "id": "720b28a8-fa3e-4545-961b-c575cf2cde48",
+      "name": "Send a message",
+      "webhookId": "4857ed26-a441-4994-a12e-e5234fc9eb6d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "JE5e4MrjVFa84qFS",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1uMf0VlWMmrkDQGKp1Nuu9xysiAAvmh6HE4rtUFI-bBE",
+          "mode": "list",
+          "cachedResultName": "Archive des demandes ESMA",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1uMf0VlWMmrkDQGKp1Nuu9xysiAAvmh6HE4rtUFI-bBE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 31069325,
+          "mode": "list",
+          "cachedResultName": "Réponses au formulaire 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1uMf0VlWMmrkDQGKp1Nuu9xysiAAvmh6HE4rtUFI-bBE/edit#gid=31069325"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Nom et prénom ": "={{ $('Get row(s) in sheet').item.json['Nom de l’étudiant '] }}",
+            "Adresse e-mail ": "={{ $('Get row(s) in sheet').item.json['Adresse e-mail '] }}",
+            "Catégorie de demande": "={{ $('Get row(s) in sheet').item.json['Catégorie '] }}",
+            "Contenu de la demande ": "={{ $('Get row(s) in sheet').item.json['Contenu de la demande '] }}",
+            "Réponse de l’administration ": "Aucune réponse détaillée requise"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Nom et prénom ",
+              "displayName": "Nom et prénom ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Adresse e-mail ",
+              "displayName": "Adresse e-mail ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Catégorie de demande",
+              "displayName": "Catégorie de demande",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Contenu de la demande ",
+              "displayName": "Contenu de la demande ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Réponse de l’administration ",
+              "displayName": "Réponse de l’administration ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Statut final ",
+              "displayName": "Statut final ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Date de traitement ",
+              "displayName": "Date de traitement ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        928,
+        -304
+      ],
+      "id": "45029494-e831-416b-9f9d-f30c3263dd9d",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "bAAFFtf2J45TQqlt",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        672,
+        48
+      ],
+      "id": "3c581b4b-c508-455f-b86d-27dc962960a6",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "lN6Abf5bGrfXHkwD",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1008,
+        -112
+      ],
+      "id": "625e5a5d-1caa-4b46-b303-47920644875f",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1uMf0VlWMmrkDQGKp1Nuu9xysiAAvmh6HE4rtUFI-bBE",
+          "mode": "list",
+          "cachedResultName": "Archive des demandes ESMA",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1uMf0VlWMmrkDQGKp1Nuu9xysiAAvmh6HE4rtUFI-bBE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 31069325,
+          "mode": "list",
+          "cachedResultName": "Réponses au formulaire 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1uMf0VlWMmrkDQGKp1Nuu9xysiAAvmh6HE4rtUFI-bBE/edit#gid=31069325"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Réponse de l’administration ": "={{ $('Edit Fields').item.json.reponse_professionnelle }}",
+            "Contenu de la demande ": "={{ $('If1').item.json['Contenu de la demande '] }}",
+            "Catégorie de demande": "={{ $('If1').item.json['Catégorie '] }}",
+            "Adresse e-mail ": "={{ $('If1').item.json['Adresse e-mail '] }}",
+            "Nom et prénom ": "={{ $('If1').item.json['Nom de l’étudiant '] }}",
+            "Statut final ": "={{ $('If1').item.json['Statut  '] }}",
+            "Date de traitement ": "={{ $('Schedule Trigger').item.json['Readable date'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Nom et prénom ",
+              "displayName": "Nom et prénom ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Adresse e-mail ",
+              "displayName": "Adresse e-mail ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Catégorie de demande",
+              "displayName": "Catégorie de demande",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Contenu de la demande ",
+              "displayName": "Contenu de la demande ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Réponse de l’administration ",
+              "displayName": "Réponse de l’administration ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Statut final ",
+              "displayName": "Statut final ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Date de traitement ",
+              "displayName": "Date de traitement ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1408,
+        -112
+      ],
+      "id": "f22ef96c-476b-42db-b44f-21c3413fd45b",
+      "name": "Append row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "bAAFFtf2J45TQqlt",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "seconds"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -144,
+        -576
+      ],
+      "id": "31bedd2e-b911-4c13-a3e9-d4cf312c9da8",
+      "name": "Schedule Trigger1"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "16WNfCWhOav148uN23kemu-XWSP6jcVJzJ_D6S7DB7ds",
+          "mode": "list",
+          "cachedResultName": "les demandes",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16WNfCWhOav148uN23kemu-XWSP6jcVJzJ_D6S7DB7ds/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 903104917,
+          "mode": "list",
+          "cachedResultName": "Réponses au formulaire 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16WNfCWhOav148uN23kemu-XWSP6jcVJzJ_D6S7DB7ds/edit#gid=903104917"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        64,
+        -576
+      ],
+      "id": "1006ab31-bccd-4708-80bc-d1a758085534",
+      "name": "Get row(s) in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "bAAFFtf2J45TQqlt",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Demande de l’étudiant :\n{{ $json['Votre demande :'] }}",
+        "options": {
+          "systemMessage": "Tu es un agent d’intelligence artificielle chargé d’analyser les demandes des étudiants.\n\nTon rôle est STRICTEMENT limité à :\n1) Vérifier si la demande est VALIDE ou NON VALIDE.\n2) Déterminer la catégorie de la demande (uniquement si valide).\n3) Générer un résumé factuel et neutre.\n4) Définir le statut INITIAL de la demande.\n\nTu ne dois PAS :\n- répondre à la place de l’administration,\n- proposer une solution,\n- modifier le statut final \"Traité\".\n\nUne demande est NON VALIDE si elle est :\n- hors sujet,\n- insultante ou inappropriée,\n- vide, trop courte ou incohérente,\n- du spam ou sans sens administratif.\n\nCatégories possibles :\n- Information\n- Réclamation\n- Urgent\n- Autre\n\nRègles de statut :\n- Si catégorie = \"Urgent\" → statut = \"Urgent\"\n- Sinon → statut = \"Reçu\"\n\nLe résumé doit être :\n- une seule phrase,\n- neutre,\n- descriptive,\n- sans jugement.\n\nRéponds UNIQUEMENT en JSON.\n\nSi la demande est VALIDE :\n{\n  \"valide\": true,\n  \"categorie\": \"Information | Réclamation | Urgent | Autre\",\n  \"resume\": \"Résumé clair et factuel\",\n  \"statut\": \"Reçu | Urgent\"\n}\n\nSi la demande est NON VALIDE :\n{\n  \"valide\": false\n}\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        -576
+      ],
+      "id": "5b1d2b16-18f2-4282-a765-18a43dc677a1",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        224,
+        -416
+      ],
+      "id": "2853db6c-4282-4e46-b631-7525aa8459f1",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "aGwBnikRgbtUuPK5",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        560,
+        -576
+      ],
+      "id": "47364491-4b64-450f-b5d0-2cdf163285f8",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "96e4287e-37a8-4620-b248-26da3e6615f6",
+              "leftValue": "={{ $json.valide }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        768,
+        -576
+      ],
+      "id": "38f8f47a-2004-46ca-b5db-0d8a3d5463da",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "operation": "remove",
+        "documentId": {
+          "__rl": true,
+          "value": "16WNfCWhOav148uN23kemu-XWSP6jcVJzJ_D6S7DB7ds",
+          "mode": "list",
+          "cachedResultName": "les demandes",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16WNfCWhOav148uN23kemu-XWSP6jcVJzJ_D6S7DB7ds/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 903104917,
+          "mode": "list",
+          "cachedResultName": "Réponses au formulaire 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16WNfCWhOav148uN23kemu-XWSP6jcVJzJ_D6S7DB7ds/edit#gid=903104917"
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        992,
+        -480
+      ],
+      "id": "5a4bfe9a-91b4-4a70-ba5e-ee82f42d6404",
+      "name": "Delete sheet2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "bAAFFtf2J45TQqlt",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1mRqAlbguowkoME4suIvSgOW1f87-9zre9CRZ9fXxDuk",
+          "mode": "list",
+          "cachedResultName": "Gestion des demandes étudiantes",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mRqAlbguowkoME4suIvSgOW1f87-9zre9CRZ9fXxDuk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1925727567,
+          "mode": "list",
+          "cachedResultName": "Réponses au formulaire 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mRqAlbguowkoME4suIvSgOW1f87-9zre9CRZ9fXxDuk/edit#gid=1925727567"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date de soumission ": "={{ $('Get row(s) in sheet1').item.json.Horodateur }}",
+            "Nom de l’étudiant ": "={{ $('Get row(s) in sheet1').item.json['Nom et Prénom :'] }}",
+            "Adresse e-mail ": "={{ $('Get row(s) in sheet1').item.json['Adress email :'] }}",
+            "Catégorie ": "={{ $json.categorie }}",
+            "Contenu de la demande ": "={{ $json.resume }}",
+            "Statut  ": "={{ $json.statut }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Date de soumission ",
+              "displayName": "Date de soumission ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Nom de l’étudiant ",
+              "displayName": "Nom de l’étudiant ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Adresse e-mail ",
+              "displayName": "Adresse e-mail ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Catégorie ",
+              "displayName": "Catégorie ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Contenu de la demande ",
+              "displayName": "Contenu de la demande ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Réponse de l’administration ",
+              "displayName": "Réponse de l’administration ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Statut  ",
+              "displayName": "Statut  ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        992,
+        -672
+      ],
+      "id": "d39752d7-8568-437c-9a8a-a3a00be5efed",
+      "name": "Append row in sheet2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "bAAFFtf2J45TQqlt",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json['Adresse e-mail '] }}",
+        "subject": "Réception de votre demande",
+        "message": "<!DOCTYPE html>\n\n<html lang=\"fr\">\n<head>\n<meta charset=\"UTF-8\">\n<title>Réception de votre demande</title>\n</head>\n<body style=\"font-family: Arial, sans-serif; background-color:#f4f6f8; padding:20px;\">\n  <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\">\n    <tr>\n      <td align=\"center\">\n        <table width=\"600\" cellpadding=\"20\" cellspacing=\"0\" style=\"background-color:#ffffff; border:1px solid #dddddd;\">\n          <tr>\n            <td>\n              <p>Bonjour,</p>\n\n```\n          <p>\n            Nous accusons réception de votre demande.\n          </p>\n\n          <p>\n            Celle-ci a bien été enregistrée et est actuellement en cours de traitement\n            par l’administration. Vous serez informé(e) dès qu’une mise à jour sera disponible.\n          </p>\n\n          <p style=\"margin-top:30px;\">\n            Cordialement,<br>\n            <strong>Service Administration</strong><br>\n            ESMA\n          </p>\n        </td>\n      </tr>\n    </table>\n  </td>\n</tr>\n```\n\n  </table>\n</body>\n</html>\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1216,
+        -672
+      ],
+      "id": "d13659df-e74e-4ede-9950-f723a6529d47",
+      "name": "Send a message1",
+      "webhookId": "4857ed26-a441-4994-a12e-e5234fc9eb6d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "KdiBCZSBRigYQrIe",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('If1').item.json['Adresse e-mail '] }}",
+        "subject": "Réponse à votre demande",
+        "message": "=<!DOCTYPE html>\n\n<html lang=\"fr\">\n<head>\n<meta charset=\"UTF-8\">\n<title>Réponse à votre demande</title>\n</head>\n<body style=\"font-family: Arial, sans-serif; background-color:#f4f6f8; padding:20px;\">\n  <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\">\n    <tr>\n      <td align=\"center\">\n        <table width=\"600\" cellpadding=\"20\" cellspacing=\"0\" style=\"background-color:#ffffff; border:1px solid #dddddd;\">\n          <tr>\n            <td>\n              <p>Bonjour,</p>\n\n```\n          <p>\n            Votre demande a été traitée par l’administration.\n          </p>\n\n          <p>\n            Réponse apportée à votre demande :\n          </p>\n\n          <div style=\"border-left:4px solid #333333; padding-left:12px; margin:15px 0;\">\n            {{ $json.reponse_professionnelle }}\n          </div>\n\n          <p style=\"margin-top:30px;\">\n            Cordialement,<br>\n            <strong>Service Administration</strong><br>\n            ESMA\n          </p>\n        </td>\n      </tr>\n    </table>\n  </td>\n</tr>\n```\n\n  </table>\n</body>\n</html>\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1200,
+        -112
+      ],
+      "id": "00d62b34-6290-495c-b205-d3f6cc39d05f",
+      "name": "Send a message2",
+      "webhookId": "4857ed26-a441-4994-a12e-e5234fc9eb6d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "KdiBCZSBRigYQrIe",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "documentId": {
+          "__rl": true,
+          "value": "16WNfCWhOav148uN23kemu-XWSP6jcVJzJ_D6S7DB7ds",
+          "mode": "list",
+          "cachedResultName": "les demandes",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16WNfCWhOav148uN23kemu-XWSP6jcVJzJ_D6S7DB7ds/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 903104917,
+          "mode": "list",
+          "cachedResultName": "Réponses au formulaire 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16WNfCWhOav148uN23kemu-XWSP6jcVJzJ_D6S7DB7ds/edit#gid=903104917"
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1440,
+        -672
+      ],
+      "id": "058a7a6d-9d21-42b0-9e35-6002036801d2",
+      "name": "Delete rows or columns from sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "bAAFFtf2J45TQqlt",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "documentId": {
+          "__rl": true,
+          "value": "1mRqAlbguowkoME4suIvSgOW1f87-9zre9CRZ9fXxDuk",
+          "mode": "list",
+          "cachedResultName": "Gestion des demandes étudiantes",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mRqAlbguowkoME4suIvSgOW1f87-9zre9CRZ9fXxDuk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1925727567,
+          "mode": "list",
+          "cachedResultName": "Réponses au formulaire 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mRqAlbguowkoME4suIvSgOW1f87-9zre9CRZ9fXxDuk/edit#gid=1925727567"
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1600,
+        -112
+      ],
+      "id": "4355f12b-088e-4523-b558-201c82d434ca",
+      "name": "Delete rows or columns from sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "bAAFFtf2J45TQqlt",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "documentId": {
+          "__rl": true,
+          "value": "1mRqAlbguowkoME4suIvSgOW1f87-9zre9CRZ9fXxDuk",
+          "mode": "list",
+          "cachedResultName": "Gestion des demandes étudiantes",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mRqAlbguowkoME4suIvSgOW1f87-9zre9CRZ9fXxDuk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1925727567,
+          "mode": "list",
+          "cachedResultName": "Réponses au formulaire 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mRqAlbguowkoME4suIvSgOW1f87-9zre9CRZ9fXxDuk/edit#gid=1925727567"
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1136,
+        -304
+      ],
+      "id": "99d27070-d95b-4d96-bde1-1dfe562b9866",
+      "name": "Delete rows or columns from sheet2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "bAAFFtf2J45TQqlt",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 1040,
+        "width": 2224
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -304,
+        -784
+      ],
+      "typeVersion": 1,
+      "id": "d87e58e4-9b21-49a2-996a-85f799b2599c",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Delete rows or columns from sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Send a message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Delete rows or columns from sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Delete sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet2": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message1": {
+      "main": [
+        [
+          {
+            "node": "Delete rows or columns from sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message2": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "7d28e946-483c-48cd-843d-7893c4469b03",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d3e508414f542d0f854ebe1ad2e3b2751eddadf8a001b55268fa8021633cac96"
+  },
+  "id": "qmWIqyxBANmkDy_C5flZq",
+  "tags": []
+}
