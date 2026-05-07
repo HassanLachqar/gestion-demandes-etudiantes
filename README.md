@@ -13,7 +13,7 @@
 
 ---
 
-## 📌 Présentation
+## Présentation
 
 La gestion manuelle des demandes étudiantes entraîne des retards, des erreurs et une surcharge de travail pour l'administration. Ce projet automatise l'ensemble du cycle de vie d'une demande — de la soumission jusqu'à l'archivage — grâce à un workflow n8n intelligent alimenté par l'IA Google Gemini.
 
@@ -23,12 +23,12 @@ La gestion manuelle des demandes étudiantes entraîne des retards, des erreurs 
 
 ## Fonctionnalités principales
 
-- 📥 **Centralisation des demandes** via un formulaire Google Forms
-- 🤖 **Validation et classification par IA** avec Google Gemini (filtrage spam, détection de catégorie et d'urgence)
-- 📊 **Tableau de bord administratif** dans Google Sheets pour gérer facilement les demandes
-- 📧 **Notifications e-mail automatiques** à chaque étape (reçu, répondu, traité)
-- 🗄️ **Archivage automatique** des demandes traitées avec nettoyage du tableau de bord
-- ⏱️ **Traitement quasi immédiat** — le workflow se déclenche toutes les 45 secondes
+- **Centralisation des demandes** via un formulaire Google Forms
+- **Validation et classification par IA** avec Google Gemini (filtrage spam, détection de catégorie et d'urgence)
+- **Tableau de bord administratif** dans Google Sheets pour gérer facilement les demandes
+- **Notifications e-mail automatiques** à chaque étape (reçu, répondu, traité)
+- **Archivage automatique** des demandes traitées avec nettoyage du tableau de bord
+- **Traitement quasi immédiat** — le workflow se déclenche toutes les 45 secondes
 
 ---
 
@@ -123,7 +123,7 @@ Trois types d'e-mails sont envoyés automatiquement via Gmail :
 
 ---
 
-## 🚀 Mise en place
+## Mise en place
 
 ### Prérequis
 - Une instance [n8n](https://n8n.io/) (cloud ou auto-hébergée)
@@ -167,12 +167,11 @@ Trois types d'e-mails sont envoyés automatiquement via Gmail :
 ```
 gestion-demandes-etudiantes/
 │
-├── README.md              # Ce fichier
-├── n8n_projet.json        # Export du workflow n8n (prêt à importer)
-├── n8n_rapport.pdf        # Rapport complet du projet
+├── README.md
+├── n8n_projet.json
 │
 └── docs/
-    └── screenshots/       # Captures d'écran du système
+    └── screenshots/
         ├── formulaire.png
         ├── workflow.png
         ├── dashboard.png
