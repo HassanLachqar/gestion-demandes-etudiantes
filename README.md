@@ -91,7 +91,7 @@ Déclenché uniquement lorsque l'administration a saisi une réponse. Il reformu
 
 ---
 
-## 📋 Statuts des demandes
+## Statuts des demandes
 
 | Statut | Signification |
 |--------|--------------|
